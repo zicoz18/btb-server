@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "@loopback/build/config/tsconfig.common.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "paths": {
+      "@org-name/package-name": [
+        "./src/local-types/node-binance-api"
+      ]
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "src/local-types"
+    ]
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/local-types/**"
+  ]
+}
