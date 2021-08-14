@@ -1,7 +1,7 @@
 import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
 import axios, {AxiosRequestConfig} from 'axios';
 import qs from 'qs';
-import {BinanceEnum} from '../enums';
+import {BinanceAPI} from '../enums';
 import {SignatureService} from './signature.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -38,7 +38,7 @@ export class BinanceRequestService {
     const signature = this.signatureService.createSignature(dataQueryString);
     const requestConfig = <AxiosRequestConfig>{
       method: type,
-      url: `${BinanceEnum.completeUrl}${endpoint}?${dataQueryString}&signature=${signature}`,
+      url: `${BinanceAPI.completeUrl}${endpoint}?${dataQueryString}&signature=${signature}`,
       headers: {
         'X-MBX-APIKEY': `${process.env.API_KEY}`,
       },
@@ -54,7 +54,7 @@ export class BinanceRequestService {
     const dataQueryString = qs.stringify(data);
     const requestConfig = <AxiosRequestConfig>{
       method: type,
-      url: `${BinanceEnum.completeUrl}${endpoint}?${dataQueryString}`
+      url: `${BinanceAPI.completeUrl}${endpoint}?${dataQueryString}`
     }
     try {
       return (await axios(requestConfig)).data;
