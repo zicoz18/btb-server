@@ -15,6 +15,34 @@ export class BinanceRequestService {
    * Add service methods here
    */
 
+  /*
+    Successful trade response =>
+      {
+        symbol: 'AVAXUSDT',
+        orderId: 454128956,
+        orderListId: -1,
+        clientOrderId: 'qu6NzN0vrk0N6OhxzbsF8G',
+        transactTime: 1628936021877,
+        price: '0.00000000',
+        origQty: '1.00000000',
+        executedQty: '1.00000000',
+        cummulativeQuoteQty: '17.55600000',
+        status: 'FILLED',
+        timeInForce: 'GTC',
+        type: 'MARKET',
+        side: 'SELL',
+        fills: [
+          {
+            price: '17.55600000',
+            qty: '1.00000000',
+            commission: '0.01755600',
+            commissionAsset: 'USDT',
+            tradeId: 31283757
+          }
+        ]
+      }
+*/
+
 
   /* https://windowsloop.com/windows-time-sync-command/ */
   /* Sync computer time with server */

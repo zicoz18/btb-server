@@ -7,7 +7,7 @@ export class AccountBalanceService {
   /*
    * Add service methods here
    */
-  getSymbolBalance(account: any, symbol: string) {
-    return account.balances.filter((item: {asset: string;}) => item.asset === symbol)[0].free;
+  getSymbolBalance(account: any, symbol: string): number {
+    return parseFloat(account.balances.filter((item: {asset: string;}) => item.asset === symbol)[0].free);
   }
 }

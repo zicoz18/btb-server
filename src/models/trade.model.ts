@@ -17,16 +17,16 @@ export class Trade extends Entity {
   symbol: string;
 
   @property({
-    type: 'string',
+    type: 'number',
     required: true,
   })
-  price: string;
+  price: number;
 
   @property({
-    type: 'string',
+    type: 'number',
     required: true,
   })
-  quantity: string;
+  quantity: number;
 
   @property({
     type: 'string',
