@@ -54,7 +54,14 @@ export class BinanceCron extends CronJob {
       interval: MovingAverage.interval1m,
       limit: MovingAverage.extendedIntervalAmount
     }
-    const candlesticks = await this.binanceRequestService.sendPublicRequest(candlesticksData, '/klines', 'GET');
+
+    let candlesticks: any;
+    try {
+      candlesticks = await this.binanceRequestService.sendPublicRequest(candlesticksData, '/klines', 'GET');
+    } catch (err) {
+      console.log('Error occured while getting candle data.');
+      return;
+    }
     /* Calculate short and long Simple Moving Average */
     const extendedSMA = this.movingAverageService.calculateSMA(candlesticks, MovingAverage.extendedIntervalAmount);
     const shortenedSMA = this.movingAverageService.calculateSMA(candlesticks, MovingAverage.shortenedIntervalAmount);
@@ -75,7 +82,13 @@ export class BinanceCron extends CronJob {
     }
 
     /* Get how much AVAX and USDT account has */
-    const account = await this.binanceRequestService.sendPrivateRequest({}, '/account', 'GET');
+    let account: any;
+    try {
+      account = await this.binanceRequestService.sendPrivateRequest({}, '/account', 'GET');
+    } catch (err) {
+      console.log('Error occured while getting account data.');
+      return;
+    }
     const avaxBalance = this.accountBalanceService.getSymbolBalance(account, Symbols.avax);
     const usdtBalance = this.accountBalanceService.getSymbolBalance(account, Symbols.usdt);
     let avaxQuantity = 0;
@@ -99,12 +112,11 @@ export class BinanceCron extends CronJob {
       type: TradeEnum.type,
       quantity: avaxQuantity,
     };
-    let trade: any = {};
+    let trade: any;
     try {
       trade = await this.binanceRequestService.sendPrivateRequest(tradeData, '/order', 'POST');
     } catch (err) {
       console.log('Error occured while creating a trade order.');
-      console.log(err);
       return;
     }
 
@@ -118,7 +130,12 @@ export class BinanceCron extends CronJob {
     const createdTrade = await this.tradeRepository.create(successfulTrade);
 
     /* After trade happens calculate account's balance in USDT */
-    const accountAfterTrade = await this.binanceRequestService.sendPrivateRequest({}, '/account', 'GET');
+    let accountAfterTrade: any;
+    try {
+      accountAfterTrade = await this.binanceRequestService.sendPrivateRequest({}, '/account', 'GET');
+    } catch (err) {
+      console.log('Error occured while getting account data after trade.');
+    }
     const avaxBalanceAfterTrade = this.accountBalanceService.getSymbolBalance(accountAfterTrade, Symbols.avax);
     const usdtBalanceAfterTrade = this.accountBalanceService.getSymbolBalance(accountAfterTrade, Symbols.usdt);
     const avaxBalanceAfterBalanceInUsdt = avaxBalanceAfterTrade * successfulTrade.price;
@@ -136,7 +153,12 @@ export class BinanceCron extends CronJob {
     \nTotal trade size: ${createdTrade.quantity * createdTrade.price}
     \nAccount balance after trade: ${createdBalance.amountInUsdt}$`;
 
-    await this.telegramBotService.sendMessage(message);
-    console.log('Cron job runs every 10 seconds.');
+    try {
+      await this.telegramBotService.sendMessage(message);
+    } catch (err) {
+      console.log('Error occured while sending Telegram message.');
+      return;
+    }
+    console.log('Cron job runs every 10 minutes.');
   }
 }
