@@ -55,6 +55,7 @@
     "axios": "^0.21.1",
     "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
+    "loopback-connector-mongodb": "^5.5.0",
     "node-binance-api": "^0.12.5",
     "qs": "^6.10.1",
     "tslib": "^2.0.0"

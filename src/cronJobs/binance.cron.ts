@@ -1,6 +1,6 @@
 import {service} from '@loopback/core';
 import {CronJob, cronJob} from '@loopback/cron';
-import {MovingAverage, Symbols} from '../enums';
+import {MovingAverage, Symbols, Trade} from '../enums';
 import {AccountBalanceService, BinanceRequestService, MovingAverageService} from '../services';
 
 @cronJob()
@@ -50,23 +50,72 @@ export class BinanceCron extends CronJob {
     /* TODO: Calculate 7 and 24 minute Moving Average */
     const extendedSMA = this.movingAverageService.calculateSMA(candlesticks, MovingAverage.extendedIntervalAmount);
     const shortenedSMA = this.movingAverageService.calculateSMA(candlesticks, MovingAverage.shortenedIntervalAmount);
-
     console.log('24 min SMA: ', extendedSMA);
     console.log('7 min SMA: ', shortenedSMA);
+
+    let tradeSide = null;
+    let avaxOrUsdtQuantity = 0;
+    if (shortenedSMA > extendedSMA) {
+      /* TODO: buy avax */
+      tradeSide = Trade.buy;
+      avaxOrUsdtQuantity = avaxBalance * Trade.balanceQuantityConstant;
+    } else if (shortenedSMA < extendedSMA) {
+      /* TODO: sell avax */
+      tradeSide = Trade.sell;
+      avaxOrUsdtQuantity = usdtBalance * Trade.balanceQuantityConstant;
+    } else {
+      console.log('TradeSide or quantity is not valid.');
+      return;
+    }
+    // if (!(tradeSide || avaxOrUsdtQuantity)) {
+    // }
+
+    console.log('Should not print if trade is not valid.');
 
     // console.log((longAverageTickAmount - shortAverageTickAmount), candlesticks.length-1S);
     /* TODO: Create an order */
 
     // const tradeSide = 'SELL';
 
-    // const tradeData = {
-    //   symbol: Trade.avaxUsdtSymbol,
-    //   side: Trade.sell,
-    //   type: Trade.type,
-    //   quantity: 0.1,
-    //   // timeInForce: 'GTC',
-    // };
+    const tradeData = {
+      symbol: Symbols.avaxUsdt,
+      side: Trade.sell,
+      type: Trade.type,
+      quantity: avaxOrUsdtQuantity,
+      // timeInForce: 'GTC',
+    };
+    console.log(tradeData);
     // const trade = await this.binanceRequestService.sendPrivateRequest(tradeData, '/order', 'POST');
+
+    /*
+    Successful trade response =>
+      {
+        symbol: 'AVAXUSDT',
+        orderId: 454128956,
+        orderListId: -1,
+        clientOrderId: 'qu6NzN0vrk0N6OhxzbsF8G',
+        transactTime: 1628936021877,
+        price: '0.00000000',
+        origQty: '1.00000000',
+        executedQty: '1.00000000',
+        cummulativeQuoteQty: '17.55600000',
+        status: 'FILLED',
+        timeInForce: 'GTC',
+        type: 'MARKET',
+        side: 'SELL',
+        fills: [
+          {
+            price: '17.55600000',
+            qty: '1.00000000',
+            commission: '0.01755600',
+            commissionAsset: 'USDT',
+            tradeId: 31283757
+          }
+        ]
+      }
+  */
+
+
     // console.log('\n\n', trade);
     // // console.log(trade.executedQty);
     // const price = trade.fills[0].price;
