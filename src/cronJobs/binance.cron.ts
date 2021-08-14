@@ -2,7 +2,7 @@ import {service} from '@loopback/core';
 import {CronJob, cronJob} from '@loopback/cron';
 import {repository} from '@loopback/repository';
 import {MovingAverage, Symbols, TradeEnum} from '../enums';
-import {Trade} from '../models';
+import {Balance, Trade} from '../models';
 import {TradeRepository} from '../repositories';
 import {AccountBalanceService, BinanceRequestService, CandleSticksService, MovingAverageService, TelegramBotService} from '../services';
 
@@ -159,11 +159,14 @@ export class BinanceCron extends CronJob {
     const avaxBalanceAfterTrade = this.accountBalanceService.getSymbolBalance(account, Symbols.avax);
     const usdtBalanceAfterTrade = this.accountBalanceService.getSymbolBalance(account, Symbols.usdt);
     const avaxBalanceAfterBalanceInUsdt = avaxBalanceAfterTrade * parseFloat(successfulTrade.price);
-    const totalBalance = avaxBalanceAfterBalanceInUsdt + usdtBalanceAfterTrade;
+    const totalBalance = avaxBalanceAfterBalanceInUsdt + parseFloat(usdtBalanceAfterTrade);
     console.log(totalBalance);
+    const createdBalance = new Balance({
+      amountInUsdt: totalBalance
+    });
 
     /* TODO: createdTrade data'sını telegram üzerinden mesaj olarak yolla */
-    const message = `Trade executed.\n${createdTrade.side}, ${createdTrade.quantity} AVAX at ${createdTrade.price}.\nTotal trade size: ${parseFloat(createdTrade.quantity) * parseFloat(createdTrade.price)}\nAccount balance after trade: ${totalBalance}$`;
+    const message = `Trade executed.\n${createdTrade.side}, ${createdTrade.quantity} AVAX at ${createdTrade.price}.\nTotal trade size: ${parseFloat(createdTrade.quantity) * parseFloat(createdTrade.price)}\nAccount balance after trade: ${createdBalance.amountInUsdt}$`;
     await this.telegramBotService.sendMessage(message);
     console.log('Cron job runs every 10 seconds.');
   }
