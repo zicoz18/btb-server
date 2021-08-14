@@ -1,7 +1,7 @@
 import {service} from '@loopback/core';
 import {CronJob, cronJob} from '@loopback/cron';
-import {MovingAverage, Symbols, Trade} from '../enums';
-import {BinanceRequestService, CandleSticksService, MovingAverageService, SignatureService} from '../services';
+import {MovingAverage, Symbols} from '../enums';
+import {AccountBalanceService, BinanceRequestService, MovingAverageService} from '../services';
 
 @cronJob()
 export class BinanceCron extends CronJob {
@@ -9,14 +9,11 @@ export class BinanceCron extends CronJob {
     @service(BinanceRequestService)
     protected binanceRequestService: BinanceRequestService,
 
-    @service(SignatureService)
-    protected signatureService: SignatureService,
-
-    @service(CandleSticksService)
-    protected candleSticksService: CandleSticksService,
-
     @service(MovingAverageService)
     protected movingAverageService: MovingAverageService,
+
+    @service(AccountBalanceService)
+    protected accountBalanceService: AccountBalanceService,
   ) {
     super({
       name: 'binance-cron',
@@ -39,12 +36,12 @@ export class BinanceCron extends CronJob {
     const accountData = {
     };
     const account = await this.binanceRequestService.sendPrivateRequest(accountData, '/account', 'GET');
-    const avaxBalance = account.balances.filter((item: {asset: string;}) => item.asset === Symbols.avax)[0].free;
-    const usdtBalance = account.balances.filter((item: {asset: string;}) => item.asset === Symbols.usdt)[0].free;
+    const avaxBalance = this.accountBalanceService.getSymbolBalance(account, Symbols.avax);
+    const usdtBalance = this.accountBalanceService.getSymbolBalance(account, Symbols.usdt);
 
     /* TODO: Get AVAX/USDT prices for 1 minute intervals */
     const candlesticksData = {
-      symbol: Trade.avaxUsdtSymbol,
+      symbol: Symbols.avaxUsdt,
       interval: MovingAverage.interval1m,
       limit: MovingAverage.extendedIntervalAmount
     }
