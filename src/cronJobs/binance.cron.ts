@@ -1,8 +1,7 @@
 import {service} from '@loopback/core';
 import {CronJob, cronJob} from '@loopback/cron';
-import {MovingAverage, Trade} from '../enums';
-import {BinanceRequestService, SignatureService} from '../services';
-import {closingPriceIndex} from '../variables';
+import {MovingAverage, Symbols, Trade} from '../enums';
+import {BinanceRequestService, CandleSticksService, MovingAverageService, SignatureService} from '../services';
 
 @cronJob()
 export class BinanceCron extends CronJob {
@@ -12,6 +11,12 @@ export class BinanceCron extends CronJob {
 
     @service(SignatureService)
     protected signatureService: SignatureService,
+
+    @service(CandleSticksService)
+    protected candleSticksService: CandleSticksService,
+
+    @service(MovingAverageService)
+    protected movingAverageService: MovingAverageService,
   ) {
     super({
       name: 'binance-cron',
@@ -34,8 +39,8 @@ export class BinanceCron extends CronJob {
     const accountData = {
     };
     const account = await this.binanceRequestService.sendPrivateRequest(accountData, '/account', 'GET');
-    const avaxBalance = account.balances.filter((item: {asset: string;}) => item.asset === 'AVAX')[0].free;
-    const usdtBalance = account.balances.filter((item: {asset: string;}) => item.asset === 'USDT')[0].free;
+    const avaxBalance = account.balances.filter((item: {asset: string;}) => item.asset === Symbols.avax)[0].free;
+    const usdtBalance = account.balances.filter((item: {asset: string;}) => item.asset === Symbols.usdt)[0].free;
 
     /* TODO: Get AVAX/USDT prices for 1 minute intervals */
     const candlesticksData = {
@@ -46,28 +51,11 @@ export class BinanceCron extends CronJob {
     /* CandleStick's 4th value gives the closing data */
     const candlesticks = await this.binanceRequestService.sendPublicRequest(candlesticksData, '/klines', 'GET');
     /* TODO: Calculate 7 and 24 minute Moving Average */
+    const extendedSMA = this.movingAverageService.calculateSMA(candlesticks, MovingAverage.extendedIntervalAmount);
+    const shortenedSMA = this.movingAverageService.calculateSMA(candlesticks, MovingAverage.shortenedIntervalAmount);
 
-    /* Get closing price for each tick */
-    const closingPrices = candlesticks.map((tick: string[]) => parseFloat(tick[closingPriceIndex]));
-    // console.log(closingPrices);
-    /* Get sum of  */
-    const sumPrice = closingPrices.reduce((a: any, b: any) => (
-      a + b
-    )).toFixed(3);
-    console.log('24 tick sum: ', sumPrice);
-    /* Get the average */
-    const average24tick = (sumPrice / MovingAverage.extendedIntervalAmount).toFixed(3);
-    console.log('24 tick average: ', average24tick);
-
-    /* Get average for last 7 ticks */
-    const shortCandleSticks = candlesticks.slice((MovingAverage.extendedIntervalAmount - MovingAverage.shortenedIntervalAmount), candlesticks.length);
-    const shortClosingPrices = shortCandleSticks.map((tick: string[]) => parseFloat(tick[closingPriceIndex]));
-    const shortSumPrice = shortClosingPrices.reduce((a: any, b: any) => (
-      a + b
-    )).toFixed(3);
-    console.log('7 tick sum: ', shortSumPrice);
-    const average7tick = (shortSumPrice / MovingAverage.shortenedIntervalAmount).toFixed(3);
-    console.log('7 tick average: ', average7tick);
+    console.log('24 min SMA: ', extendedSMA);
+    console.log('7 min SMA: ', shortenedSMA);
 
     // console.log((longAverageTickAmount - shortAverageTickAmount), candlesticks.length-1S);
     /* TODO: Create an order */
