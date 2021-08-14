@@ -12,6 +12,8 @@
     "node": ">=10.16"
   },
   "scripts": {
+    "postinstall": "npm run build",
+    "start:prod": "node dist/index.js",
     "build": "lb-tsc",
     "build:watch": "lb-tsc --watch",
     "lint": "npm run prettier:check",
