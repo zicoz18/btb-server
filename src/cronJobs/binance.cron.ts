@@ -48,7 +48,7 @@ export class BinanceCron extends CronJob {
     /* TODO: Get latest Trade  */
     const latestTrade = await this.tradeRepository.findOne({
       order: ['date DESC'],
-      limit: 1,
+      limit: 1
     });
     console.log('Latest trade: ', latestTrade);
 
@@ -93,12 +93,9 @@ export class BinanceCron extends CronJob {
     } else {
       avaxQuantity = parseFloat((avaxBalance * TradeEnum.balanceQuantityConstant).toFixed(3));
     }
-
-    console.log('Should not print if trade is not valid.');
     console.log('Signal: ', tradeSide);
     // console.log((longAverageTickAmount - shortAverageTickAmount), candlesticks.length-1S);
     /* TODO: Create an order */
-
     if (avaxQuantity * latestClosingPrice < TradeEnum.minTradeSize) {
       console.log('Trade size is less than 10 usdt. Therefore cannot perform the trade.');
       return;
@@ -109,12 +106,17 @@ export class BinanceCron extends CronJob {
       symbol: Symbols.avaxUsdt,
       side: tradeSide,
       type: TradeEnum.type,
-      // TODO: quantity kaç AVAX alacağı olabilir bir de onu dene
       quantity: avaxQuantity,
     };
     console.log(tradeData);
-
-    const trade = await this.binanceRequestService.sendPrivateRequest(tradeData, '/order', 'POST');
+    let trade: any = {};
+    try {
+      trade = await this.binanceRequestService.sendPrivateRequest(tradeData, '/order', 'POST');
+    } catch (err) {
+      console.log('Error occured while performing a trade.');
+      console.log(err);
+      return;
+    }
     /*
     Successful trade response =>
       {
