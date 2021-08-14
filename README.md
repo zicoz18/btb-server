@@ -10,8 +10,8 @@ At every 10 minutes
 - Get account balance and calculate quantity of AVAX that will be traded.   
 - Check if trading volume is higher than the minimum amoun (currently 10 usdt)
 - Create order via Binance API and write the trade to DB
-- Calculate total balance in termss of USDT and write it to DB
-- Send Telegram message about executed trade and current account balance
+- Calculate total balance in terms of USDT and write it to DB
+- Send a Telegram message about executed trade and current account balance
 
 ### Run the application
 ```sh
