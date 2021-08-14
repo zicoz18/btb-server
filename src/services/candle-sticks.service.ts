@@ -24,4 +24,9 @@ export class CandleSticksService {
       idx >= closingPrices.length - periodAmount
     ));
   }
+
+  getLatestClosingPrice(candlesticks: any) {
+    return parseFloat(candlesticks[candlesticks.length - 1][closingPriceIndex]);
+  }
+
 }

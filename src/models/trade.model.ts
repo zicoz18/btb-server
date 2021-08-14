@@ -5,7 +5,8 @@ export class Trade extends Entity {
   @property({
     type: 'string',
     id: true,
-    generated: true,
+    required: true,
+    defaultFn: 'uuidv4',
   })
   id?: string;
 
@@ -32,6 +33,12 @@ export class Trade extends Entity {
     required: true,
   })
   side: string;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  date?: Date;
 
 
   constructor(data?: Partial<Trade>) {
