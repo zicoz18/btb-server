@@ -1,6 +1,10 @@
 # Binance-trading-bot-server (BTB-server)
 This is a bot using Binance API to trade and save them to DB.
 
+[API and explorer](https://binance-trading-bot-server.herokuapp.com/)
+
+
+
 ## What this application does
 At every 10 minutes 
 - Get latest executed trade from DB
