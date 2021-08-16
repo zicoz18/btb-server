@@ -42,6 +42,7 @@ export class BinanceCron extends CronJob {
   }
 
   async performMyJob() {
+    const currentDate = new Date();
     /* Get latest Trade  */
     const latestTrade = await this.tradeRepository.findOne({
       order: ['date DESC'],
@@ -101,7 +102,7 @@ export class BinanceCron extends CronJob {
     }
     /* Check if trade volume is higher than minTradeSize (which is 10 usdt right now.) */
     if (avaxQuantity * latestClosingPrice < TradeEnum.minTradeSize) {
-      console.log(`Trade size is less than ${TradeEnum.minTradeSize} usdt. Therefore cannot perform the trade.`);
+      console.log(`Cannot ${tradeSide}. Trade size is less than ${TradeEnum.minTradeSize} usdt. Therefore cannot perform the trade.`);
       return;
     }
 
@@ -126,31 +127,25 @@ export class BinanceCron extends CronJob {
       price: parseFloat(parseFloat(trade.fills[0].price).toFixed(significantDigitAmount)),
       quantity: parseFloat(parseFloat(trade.fills[0].qty).toFixed(significantDigitAmount)),
       side: trade.side,
+      date: currentDate,
     });
-    const createdTrade = await this.tradeRepository.create(successfulTrade);
 
+    const createdTrade = await this.tradeRepository.create(successfulTrade);
     /* After trade happens calculate account's balance in USDT */
-    let accountAfterTrade: any;
-    try {
-      accountAfterTrade = await this.binanceRequestService.sendPrivateRequest({}, '/account', 'GET');
-    } catch (err) {
-      console.log('Error occured while getting account data after trade.');
-    }
-    const avaxBalanceAfterTrade = this.accountBalanceService.getSymbolBalance(accountAfterTrade, Symbols.avax);
-    const usdtBalanceAfterTrade = this.accountBalanceService.getSymbolBalance(accountAfterTrade, Symbols.usdt);
-    const avaxBalanceAfterBalanceInUsdt = avaxBalanceAfterTrade * successfulTrade.price;
-    const totalBalance = parseFloat((avaxBalanceAfterBalanceInUsdt + usdtBalanceAfterTrade).toFixed(significantDigitAmount));
+    const totalBalance = await this.balanceRepository.calculateBalanceInUsdt(successfulTrade.price);
 
     /* Write the balance to DB */
     const balanceAfterTrade = new Balance({
-      amountInUsdt: totalBalance
+      amountInUsdt: totalBalance,
+      tradeId: createdTrade.id,
+      date: currentDate,
     });
-    const createdBalance = await this.balanceRepository.create(balanceAfterTrade);
+    const createdBalance = await this.tradeRepository.balance(createdTrade.id).create(balanceAfterTrade);
 
     /* Send message via Telegram,   */
     const message = `Trade executed.
     \n${createdTrade.side}, ${createdTrade.quantity} AVAX at ${createdTrade.price}.
-    \nTotal trade size: ${createdTrade.quantity * createdTrade.price}
+    \nTotal trade size: ${parseFloat((createdTrade.quantity * createdTrade.price).toFixed(significantDigitAmount))}
     \nAccount balance after trade: ${createdBalance.amountInUsdt}$`;
 
     try {

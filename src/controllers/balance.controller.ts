@@ -4,27 +4,31 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
-import {Balance} from '../models';
+import {Balance, Trade} from '../models';
 import {BalanceRepository} from '../repositories';
 
 export class BalanceController {
   constructor(
     @repository(BalanceRepository)
-    public balanceRepository : BalanceRepository,
-  ) {}
+    public balanceRepository: BalanceRepository,
+  ) { }
+
+  @post('/balances/calculate-current-balance')
+  @response(200, {
+    description: 'Balance model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Balance)}},
+  })
+  async calculateCurrentBalance(
+  ): Promise<number> {
+    return this.balanceRepository.calculateBalanceInUsdt();
+  }
 
   @post('/balances')
   @response(200, {
@@ -146,5 +150,28 @@ export class BalanceController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.balanceRepository.deleteById(id);
+  }
+
+  /* RELATION ENDPOINTS */
+
+  /* Balance belongsTo Trade */
+
+  /* Get  trade of the balance*/
+  @get('/balances/{id}/trade', {
+    responses: {
+      '200': {
+        description: 'Trade belonging to Balance',
+        content: {
+          'application/json': {
+            schema: {type: 'array', items: getModelSchemaRef(Trade)},
+          },
+        },
+      },
+    },
+  })
+  async getTrade(
+    @param.path.string('id') id: typeof Balance.prototype.id,
+  ): Promise<Trade> {
+    return this.balanceRepository.trade(id);
   }
 }

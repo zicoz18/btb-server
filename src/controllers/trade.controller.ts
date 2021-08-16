@@ -4,27 +4,21 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, getWhereSchemaFor, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
-import {Trade} from '../models';
+import {Balance, Trade} from '../models';
 import {TradeRepository} from '../repositories';
 
 export class TradeController {
   constructor(
     @repository(TradeRepository)
-    public tradeRepository : TradeRepository,
-  ) {}
+    public tradeRepository: TradeRepository,
+  ) { }
 
   @post('/trades')
   @response(200, {
@@ -146,5 +140,91 @@ export class TradeController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.tradeRepository.deleteById(id);
+  }
+
+  /* REALTION ENDPOINTS */
+
+  /* Trade hasOne Balance */
+
+  @get('/trades/{id}/balance', {
+    responses: {
+      '200': {
+        description: 'Trade has one Balance',
+        content: {
+          'application/json': {
+            schema: getModelSchemaRef(Balance),
+          },
+        },
+      },
+    },
+  })
+  async get(
+    @param.path.string('id') id: string,
+    @param.query.object('filter') filter?: Filter<Balance>,
+  ): Promise<Balance> {
+    return this.tradeRepository.balance(id).get(filter);
+  }
+
+  @post('/trades/{id}/balance', {
+    responses: {
+      '200': {
+        description: 'Trade model instance',
+        content: {'application/json': {schema: getModelSchemaRef(Balance)}},
+      },
+    },
+  })
+  async createBalance(
+    @param.path.string('id') id: typeof Trade.prototype.id,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Balance, {
+            title: 'NewBalanceInTrade',
+            exclude: ['id'],
+            optional: ['tradeId']
+          }),
+        },
+      },
+    }) balance: Omit<Balance, 'id'>,
+  ): Promise<Balance> {
+    return this.tradeRepository.balance(id).create(balance);
+  }
+
+  @patch('/trades/{id}/balance', {
+    responses: {
+      '200': {
+        description: 'Trade.Balance PATCH success count',
+        content: {'application/json': {schema: CountSchema}},
+      },
+    },
+  })
+  async patch(
+    @param.path.string('id') id: string,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Balance, {partial: true}),
+        },
+      },
+    })
+    balance: Partial<Balance>,
+    @param.query.object('where', getWhereSchemaFor(Balance)) where?: Where<Balance>,
+  ): Promise<Count> {
+    return this.tradeRepository.balance(id).patch(balance, where);
+  }
+
+  @del('/trades/{id}/balance', {
+    responses: {
+      '200': {
+        description: 'Trade.Balance DELETE success count',
+        content: {'application/json': {schema: CountSchema}},
+      },
+    },
+  })
+  async delete(
+    @param.path.string('id') id: string,
+    @param.query.object('where', getWhereSchemaFor(Balance)) where?: Where<Balance>,
+  ): Promise<Count> {
+    return this.tradeRepository.balance(id).delete(where);
   }
 }
