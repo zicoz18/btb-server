@@ -12,6 +12,12 @@ export class Balance extends Entity {
   id?: string;
 
   @property({
+    type: 'string',
+    required: true,
+  })
+  type: string;
+
+  @property({
     type: 'number',
     required: true,
   })

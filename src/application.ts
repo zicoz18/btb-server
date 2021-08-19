@@ -1,18 +1,18 @@
-import { BootMixin } from '@loopback/boot';
-import { ApplicationConfig, createBindingFromClass } from '@loopback/core';
+import {BootMixin} from '@loopback/boot';
+import {ApplicationConfig, createBindingFromClass} from '@loopback/core';
+import {CronComponent} from '@loopback/cron';
+import {RepositoryMixin} from '@loopback/repository';
+import {RestApplication} from '@loopback/rest';
 import {
   RestExplorerBindings,
-  RestExplorerComponent,
+  RestExplorerComponent
 } from '@loopback/rest-explorer';
-import { RepositoryMixin } from '@loopback/repository';
-import { RestApplication } from '@loopback/rest';
-import { ServiceMixin } from '@loopback/service-proxy';
+import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
-import { MySequence } from './sequence';
-import { CronComponent } from '@loopback/cron';
-import { BinanceCron } from './cronJobs';
+import {BinanceCron, DailyBalanceCron, MonthlyCron, WeeklyBalanceCron} from './cronJobs';
+import {MySequence} from './sequence';
 
-export { ApplicationConfig };
+export {ApplicationConfig};
 
 export class BtbServerApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -32,9 +32,12 @@ export class BtbServerApplication extends BootMixin(
     });
     this.component(RestExplorerComponent);
 
+    /* Add cronComponents */
     this.component(CronComponent);
-
     this.add(createBindingFromClass(BinanceCron));
+    this.add(createBindingFromClass(DailyBalanceCron));
+    this.add(createBindingFromClass(WeeklyBalanceCron));
+    this.add(createBindingFromClass(MonthlyCron));
 
     this.projectRoot = __dirname;
     // Customize @loopback/boot Booter Conventions here

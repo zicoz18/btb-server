@@ -44,4 +44,35 @@ export class BalanceRepository extends DefaultCrudRepository<
     const totalBalanceInUsdt = parseFloat((avaxBalanceInUsdt + usdtBalance).toFixed(significantDigitAmount));
     return totalBalanceInUsdt;
   }
+
+  // async createCronicBalance(type: string) {
+  //   const currentDate = new Date();
+  //   const currentBalance = await this.calculateBalanceInUsdt();
+  //   const newBalance = new Balance({
+  //     amountInUsdt: currentBalance,
+  //     date: currentDate,
+  //     type: type
+  //   });
+  //   await this.create(newBalance);
+  // }
+
+  async updateCronicBalance(type: string) {
+    const currentDate = new Date();
+    const currentBalance = await this.calculateBalanceInUsdt();
+    const existingCronicBalance = await this.findOne({
+      where: {
+        type: type,
+      }
+    });
+    const newBalance = new Balance({
+      amountInUsdt: currentBalance,
+      date: currentDate,
+      type: type
+    });
+    if (existingCronicBalance) {
+      await this.update(existingCronicBalance, newBalance);
+    } else {
+      await this.create(newBalance);
+    }
+  }
 }

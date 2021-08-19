@@ -1,7 +1,8 @@
 import {service} from '@loopback/core';
 import {CronJob, cronJob} from '@loopback/cron';
 import {repository} from '@loopback/repository';
-import {MovingAverage, Symbols, TradeEnum} from '../enums';
+import {BalanceType, MovingAverage, Symbols, TradeEnum} from '../enums';
+import {CronExpression} from '../enums/cronExpressions/cron-expressions.enum';
 import {Balance, Trade} from '../models';
 import {BalanceRepository, TradeRepository} from '../repositories';
 import {AccountBalanceService, BinanceRequestService, CandleSticksService, MovingAverageService, TelegramBotService} from '../services';
@@ -36,7 +37,7 @@ export class BinanceCron extends CronJob {
       onTick: async () => {
         this.performMyJob();
       },
-      cronTime: '0 */10 * * * *', // Every 10 minutes
+      cronTime: CronExpression.every5minutes, // Every 5 minutes
       start: true,
     });
   }
@@ -52,7 +53,7 @@ export class BinanceCron extends CronJob {
     /* Get AVAX/USDT prices with 1 minute intervals */
     const candlesticksData = {
       symbol: Symbols.avaxUsdt,
-      interval: MovingAverage.interval1m,
+      interval: MovingAverage.interval5m,
       limit: MovingAverage.extendedIntervalAmount
     }
 
@@ -139,6 +140,7 @@ export class BinanceCron extends CronJob {
       amountInUsdt: totalBalance,
       tradeId: createdTrade.id,
       date: currentDate,
+      type: BalanceType.Trade,
     });
     const createdBalance = await this.tradeRepository.balance(createdTrade.id).create(balanceAfterTrade);
 
