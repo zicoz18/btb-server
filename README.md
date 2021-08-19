@@ -17,10 +17,12 @@ At every 5 minutes
 - Calculate total balance in terms of USDT and write it to DB
 - Send a Telegram message about executed trade and current account balance
 
-### Run the application
+### How to run the application
+Step 1
 ```sh
 npm i
 ```
+Step 2
 ```
 npm start
 ```
