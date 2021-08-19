@@ -20,6 +20,17 @@ export class BalanceController {
     public balanceRepository: BalanceRepository,
   ) { }
 
+  @post('/balances/calculate-cronic-balance/{type}')
+  @response(200, {
+    description: 'Balance model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Balance)}},
+  })
+  async calculateCronicBalance(
+    @param.path.string('type') type: string,
+  ): Promise<void> {
+    return await this.balanceRepository.updateCronicBalance(type);
+  }
+
   @post('/balances/calculate-current-balance')
   @response(200, {
     description: 'Balance model instance',
@@ -27,7 +38,7 @@ export class BalanceController {
   })
   async calculateCurrentBalance(
   ): Promise<number> {
-    return this.balanceRepository.calculateBalanceInUsdt();
+    return await this.balanceRepository.calculateBalanceInUsdt();
   }
 
   @post('/balances')

@@ -56,7 +56,7 @@ export class BalanceRepository extends DefaultCrudRepository<
   //   await this.create(newBalance);
   // }
 
-  async updateCronicBalance(type: string) {
+  async updateCronicBalance(type: string): Promise<void> {
     const currentDate = new Date();
     const currentBalance = await this.calculateBalanceInUsdt();
     const existingCronicBalance = await this.findOne({
@@ -70,7 +70,7 @@ export class BalanceRepository extends DefaultCrudRepository<
       type: type
     });
     if (existingCronicBalance) {
-      await this.update(existingCronicBalance, newBalance);
+      await this.updateById(existingCronicBalance.id, newBalance);
     } else {
       await this.create(newBalance);
     }
