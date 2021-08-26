@@ -21,7 +21,7 @@ export class BinanceRequestService {
         symbol: 'AVAXUSDT',
         orderId: 454128956,
         orderListId: -1,
-        clientOrderId: 'qu6NzN0vrk0N6OhxzbsF8G',
+        clientOrderId: 'askjdjahsvdfahsduas',
         transactTime: 1628936021877,
         price: '0.00000000',
         origQty: '1.00000000',

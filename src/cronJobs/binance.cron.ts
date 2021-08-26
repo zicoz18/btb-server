@@ -50,7 +50,7 @@ export class BinanceCron extends CronJob {
       limit: 1
     });
 
-    /* Get AVAX/USDT prices with 1 minute intervals */
+    /* Get AVAX/USDT prices with 5 minute intervals */
     const candlesticksData = {
       symbol: Symbols.avaxUsdt,
       interval: MovingAverage.interval5m,

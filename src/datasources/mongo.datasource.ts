@@ -7,7 +7,7 @@ dotenv.config();
 const config = {
   name: 'mongo',
   connector: 'mongodb',
-  url: 'mongodb+srv://zicoz18:XOtgz3cJxXqAounu@cluster0.i44r7.mongodb.net/BTB?retryWrites=true&w=majority',
+  url: `mongodb+srv://zicoz18:${process.env.DB_PASSWORD}@cluster0.i44r7.mongodb.net/BTB?retryWrites=true&w=majority`,
   host: 'localhost',
   port: 27017,
   user: 'zicoz18',
