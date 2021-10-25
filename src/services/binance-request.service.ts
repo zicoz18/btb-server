@@ -73,7 +73,7 @@ export class BinanceRequestService {
     };
     try {
       return (await axios(requestConfig)).data;
-    } catch (err) {
+    } catch (err: any) {
       console.log(err.response.data.msg)
     }
   }
@@ -86,7 +86,7 @@ export class BinanceRequestService {
     }
     try {
       return (await axios(requestConfig)).data;
-    } catch (err) {
+    } catch (err: any) {
       console.log(err.request.data);
     }
   }
